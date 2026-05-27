@@ -24,13 +24,17 @@
     .team-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
     .team-list li { background: #0d1220; border-radius: 8px; padding: 8px 12px; font-size: 0.9rem; color: #ddd; }
     .section-heading { font-size: 0.8rem; font-weight: bold; letter-spacing: 2px; color: #888; text-transform: uppercase; margin: 28px 0 12px; }
-    .match-card { background: #1a1f35; border: 1px solid #2a3050; border-radius: 12px; padding: 16px 20px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .match-card { background: #1a1f35; border: 1px solid #2a3050; border-radius: 12px; padding: 16px 20px; margin-bottom: 10px; display: flex; align-items: center; gap: 12px; }
     .match-card.live { border-color: #22c55e; box-shadow: 0 0 12px rgba(34,197,94,0.2); }
-    .match-card.finished { opacity: 0.75; }
-    .team-name { font-size: 0.95rem; font-weight: 600; flex: 1; }
-    .team-name.home { text-align: right; }
-    .team-name.away { text-align: left; }
-    .match-score { text-align: center; min-width: 90px; }
+    .match-card.finished { opacity: 0.8; }
+    .mc-side { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+    .mc-side.home { align-items: flex-end; text-align: right; }
+    .mc-side.away { align-items: flex-start; text-align: left; }
+    .mc-player { font-size: 1.15rem; font-weight: 500; color: #c9a227; }
+    .mc-player.no-owner { font-size: 0.9rem; color: #888; }
+    .mc-badge { background: #0d2010; color: #86efac; font-size: 0.7rem; padding: 3px 10px; border-radius: 20px; border: 1px solid #166534; display: inline-block; }
+    .mc-badge.no-owner { background: #1a1f35; color: #555; border-color: #2a3050; }
+    .match-score { text-align: center; min-width: 80px; }
     .score-numbers { font-size: 1.4rem; font-weight: bold; color: #fff; }
     .score-status { font-size: 0.72rem; margin-top: 3px; }
     .status-live { color: #22c55e; font-weight: bold; }
@@ -269,14 +273,14 @@
       else if(status==='FINISHED'){label='<span class="status-finished">FT</span>';cls='finished';}
       else{const t=new Date(m.utcDate).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});label=`<span class="status-timed">${t}</span>`;}
       return `<div class="match-card ${cls}">
-        <div class="team-name home" style="${ho?'color:#c9a227':''}">
-          ${home}
-          ${ho?`<div style="font-size:0.7rem;color:#888;margin-top:2px">${ho}</div>`:''}
+        <div class="mc-side home">
+          <div class="mc-player ${ho?'':'no-owner'}">${ho||home}</div>
+          <div class="mc-badge ${ho?'':'no-owner'}">${ho?home:'No owner'}</div>
         </div>
         <div class="match-score"><div class="score-numbers">${hs} – ${as_}</div><div class="score-status">${label}</div></div>
-        <div class="team-name away" style="${ao?'color:#c9a227':''}">
-          ${away}
-          ${ao?`<div style="font-size:0.7rem;color:#888;margin-top:2px">${ao}</div>`:''}
+        <div class="mc-side away">
+          <div class="mc-player ${ao?'':'no-owner'}">${ao||away}</div>
+          <div class="mc-badge ${ao?'':'no-owner'}">${ao?away:'No owner'}</div>
         </div>
       </div>`;
     }
