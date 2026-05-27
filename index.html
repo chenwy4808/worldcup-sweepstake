@@ -269,9 +269,15 @@
       else if(status==='FINISHED'){label='<span class="status-finished">FT</span>';cls='finished';}
       else{const t=new Date(m.utcDate).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});label=`<span class="status-timed">${t}</span>`;}
       return `<div class="match-card ${cls}">
-        <div class="team-name home" style="${ho?'color:#c9a227':''}" title="${ho||''}">${home}</div>
+        <div class="team-name home" style="${ho?'color:#c9a227':''}">
+          ${home}
+          ${ho?`<div style="font-size:0.7rem;color:#888;margin-top:2px">${ho}</div>`:''}
+        </div>
         <div class="match-score"><div class="score-numbers">${hs} – ${as_}</div><div class="score-status">${label}</div></div>
-        <div class="team-name away" style="${ao?'color:#c9a227':''}" title="${ao||''}">${away}</div>
+        <div class="team-name away" style="${ao?'color:#c9a227':''}">
+          ${away}
+          ${ao?`<div style="font-size:0.7rem;color:#888;margin-top:2px">${ao}</div>`:''}
+        </div>
       </div>`;
     }
 
