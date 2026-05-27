@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>World Cup 2026 Sweepstake</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #0a0e1a; color: #ffffff; font-family: 'Segoe UI', sans-serif; min-height: 100vh; }
+    header { background: linear-gradient(135deg, #1a1f35, #0d1b2a); border-bottom: 3px solid #c9a227; padding: 20px 30px; text-align: center; }
+    header h1 { font-size: 2rem; color: #c9a227; }
+    header p  { color: #aaa; margin-top: 5px; font-size: 0.95rem; }
+    nav { display: flex; justify-content: center; gap: 10px; padding: 20px; background: #0d1220; }
+    nav button { background: #1a1f35; color: #ccc; border: 1px solid #333; padding: 10px 24px; border-radius: 25px; cursor: pointer; font-size: 0.95rem; transition: all 0.2s; }
+    nav button.active { background: #c9a227; color: #000; border-color: #c9a227; font-weight: bold; }
+    nav button:hover:not(.active) { background: #252b45; border-color: #555; }
+    main { max-width: 960px; margin: 30px auto; padding: 0 20px; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+    .draw-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+    .participant-card { background: #1a1f35; border: 1px solid #2a3050; border-radius: 14px; padding: 20px; transition: transform 0.2s; }
+    .participant-card:hover { transform: translateY(-3px); border-color: #c9a227; }
+    .participant-name { font-size: 1.2rem; font-weight: bold; color: #c9a227; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid #2a3050; }
+    .team-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    .team-list li { background: #0d1220; border-radius: 8px; padding: 8px 12px; font-size: 0.9rem; color: #ddd; }
+    .section-heading { font-size: 0.8rem; font-weight: bold; letter-spacing: 2px; color: #888; text-transform: uppercase; margin: 28px 0 12px; }
+    .match-card { background: #1a1f35; border: 1px solid #2a3050; border-radius: 12px; padding: 16px 20px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .match-card.live { border-color: #22c55e; box-shadow: 0 0 12px rgba(34,197,94,0.2); }
+    .match-card.finished { opacity: 0.75; }
+    .team-name { font-size: 0.95rem; font-weight: 600; flex: 1; }
+    .team-name.home { text-align: right; }
+    .team-name.away { text-align: left; }
+    .match-score { text-align: center; min-width: 90px; }
+    .score-numbers { font-size: 1.4rem; font-weight: bold; color: #fff; }
+    .score-status { font-size: 0.72rem; margin-top: 3px; }
+    .status-live { color: #22c55e; font-weight: bold; }
+    .status-timed { color: #60a5fa; }
+    .status-finished { color: #888; }
+    .refresh-bar { text-align: center; color: #555; font-size: 0.8rem; margin-top: 20px; }
+    .loading { text-align: center; color: #666; padding: 50px; font-size: 1rem; }
+    .error-msg { background: #2a1020; border: 1px solid #8b2020; border-radius: 10px; padding: 20px; color: #f87171; text-align: center; }
+    .survival-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 30px; }
+    .survival-chip { border-radius: 30px; padding: 8px 18px; font-size: 0.9rem; font-weight: bold; display: flex; align-items: center; gap: 8px; }
+    .chip-alive { background: #14532d; color: #86efac; border: 1px solid #166534; }
+    .chip-out { background: #1c1c1c; color: #555; border: 1px solid #2a2a2a; text-decoration: line-through; }
+    .chip-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+    .chip-alive .chip-dot { background: #22c55e; }
+    .chip-out .chip-dot { background: #444; }
+    .bracket-card { background: #1a1f35; border: 1px solid #2a3050; border-radius: 14px; margin-bottom: 12px; overflow: hidden; }
+    .bracket-round-label { background: #0d1220; padding: 6px 16px; font-size: 0.7rem; letter-spacing: 2px; color: #555; text-transform: uppercase; }
+    .bracket-matchup { display: flex; align-items: stretch; min-height: 70px; }
+    .bracket-side { flex: 1; padding: 12px 16px; display: flex; flex-direction: column; justify-content: center; }
+    .bracket-side.home { text-align: right; border-right: 1px solid #2a3050; }
+    .bracket-owner { font-size: 1rem; font-weight: bold; color: #c9a227; }
+    .bracket-team { font-size: 0.8rem; color: #888; margin-top: 2px; }
+    .bracket-vs { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px 14px; min-width: 70px; text-align: center; background: #111827; }
+    .bracket-score { font-size: 1.2rem; font-weight: bold; color: #fff; }
+    .bracket-status { font-size: 0.65rem; margin-top: 3px; }
+    .bracket-card.same-owner { border-color: #7c3aed; }
+    .bracket-card.live-match { border-color: #22c55e; }
+    .bracket-owner.unknown { color: #555; font-size: 0.8rem; font-weight: normal; }
+    .no-data-msg { background: #1a1f35; border: 1px dashed #2a3050; border-radius: 14px; padding: 40px; text-align: center; color: #555; }
+    @media (max-width: 600px) {
+      header { padding: 16px; } header h1 { font-size: 1.4rem; } header p { font-size: 0.8rem; }
+      nav { padding: 12px 10px; gap: 8px; flex-wrap: wrap; } nav button { padding: 8px 14px; font-size: 0.8rem; }
+      .draw-grid { grid-template-columns: 1fr; } main { margin: 16px auto; padding: 0 12px; }
+      .team-name { font-size: 0.78rem; } .score-numbers { font-size: 1.1rem; } .match-card { padding: 12px 10px; }
+      .survival-chip { padding: 6px 12px; font-size: 0.8rem; }
+      .bracket-side { padding: 10px; } .bracket-owner { font-size: 0.85rem; } .bracket-team { font-size: 0.7rem; }
+      .bracket-vs { padding: 6px 8px; min-width: 52px; } .bracket-score { font-size: 1rem; }
+      .section-heading { font-size: 0.7rem; margin: 20px 0 8px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>⚽ World Cup 2026 Sweepstake</h1>
+    <p>USA · Canada · Mexico · June 11 – July 19, 2026</p>
+  </header>
+  <nav>
+    <button class="active" onclick="showTab('draw', this)">🎲 The Draw</button>
+    <button onclick="showTab('matches', this)">📅 Live Matches</button>
+    <button onclick="showTab('bracket', this)">🏆 Who's In?</button>
+  </nav>
+  <main>
+    <div id="tab-draw" class="tab-panel active">
+      <div class="draw-grid" id="draw-grid"></div>
+    </div>
+    <div id="tab-matches" class="tab-panel">
+      <div id="matches-container"><div class="loading">⏳ Loading matches...</div></div>
+      <div class="refresh-bar" id="refresh-bar"></div>
+    </div>
+    <div id="tab-bracket" class="tab-panel">
+      <div id="bracket-container"><div class="loading">⏳ Loading bracket...</div></div>
+    </div>
+  </main>
+  <script>
+    // Calls our Netlify serverless function — no CORS issues
+    const API_URL = '/.netlify/functions/matches';
+
+    const participants = [
+      { name: "Kirky",   teams: ["USA", "Uruguay", "Sweden", "Belgium", "Norway", "France"] },
+      { name: "Shreeves",teams: ["Argentina", "Austria", "Portugal", "South Korea", "Iraq", "Bosnia"] },
+      { name: "Aiden",   teams: ["Uzbekistan", "DR Congo", "Panama", "Colombia", "Czech Republic", "South Africa"] },
+      { name: "Ash",     teams: ["Australia", "Algeria", "Japan", "Ecuador", "Spain", "Mexico"] },
+      { name: "Liam",    teams: ["England", "Tunisia", "Senegal", "Cape Verde", "Qatar", "Ghana"] },
+      { name: "Mull",    teams: ["Switzerland", "Saudi Arabia", "Scotland", "Paraguay", "New Zealand", "Haiti"] },
+      { name: "Chen",    teams: ["Brazil", "Croatia", "Ivory Coast", "Germany", "Curaçao", "Iran"] },
+      { name: "Josh",    teams: ["Netherlands", "Jordan", "Canada", "Turkey", "Egypt", "Morocco"] }
+    ];
+
+    const NAME_ALIASES = {
+      'united states':'usa','usa':'usa',
+      "côte d'ivoire":'ivory coast',"cote d'ivoire":'ivory coast','ivory coast':'ivory coast',
+      'korea republic':'south korea','republic of korea':'south korea','south korea':'south korea',
+      'bosnia and herzegovina':'bosnia','bosnia & herzegovina':'bosnia','bosnia':'bosnia',
+      'dr congo':'dr congo','congo dr':'dr congo','democratic republic of congo':'dr congo',
+      'czechia':'czech republic','czech republic':'czech republic',
+      'curaçao':'curaçao','curacao':'curaçao',
+      'cape verde':'cape verde','cabo verde':'cape verde',
+      'new zealand':'new zealand','saudi arabia':'saudi arabia',
+      'south africa':'south africa','uzbekistan':'uzbekistan',
+    };
+
+    function normaliseName(n) { if(!n)return''; const l=n.toLowerCase().trim(); return NAME_ALIASES[l]||l; }
+    function findOwner(t) { const k=normaliseName(t); for(const p of participants) for(const x of p.teams) if(normaliseName(x)===k) return p.name; return null; }
+
+    function getEliminatedTeams(matches) {
+      const out=new Set();
+      matches.filter(m=>m.status==='FINISHED'&&m.stage!=='GROUP_STAGE').forEach(m=>{
+        if(m.score.winner==='HOME_TEAM') out.add(normaliseName(m.awayTeam.name));
+        if(m.score.winner==='AWAY_TEAM') out.add(normaliseName(m.homeTeam.name));
+      });
+      return out;
+    }
+
+    function getGroupEliminated(matches) {
+      const losses={},wins={};
+      matches.filter(m=>m.status==='FINISHED'&&m.stage==='GROUP_STAGE').forEach(m=>{
+        const h=normaliseName(m.homeTeam.name),a=normaliseName(m.awayTeam.name);
+        losses[h]=losses[h]||0;losses[a]=losses[a]||0;wins[h]=wins[h]||0;wins[a]=wins[a]||0;
+        if(m.score.winner==='HOME_TEAM'){losses[a]++;wins[h]++;}
+        if(m.score.winner==='AWAY_TEAM'){losses[h]++;wins[a]++;}
+      });
+      const out=new Set();
+      for(const[t,l]of Object.entries(losses)) if(l>=3&&(wins[t]||0)===0) out.add(t);
+      return out;
+    }
+
+    function renderBracket(matches) {
+      const c=document.getElementById('bracket-container');
+      const ke=getEliminatedTeams(matches),ge=getGroupEliminated(matches);
+      const isOut=t=>ke.has(normaliseName(t))||ge.has(normaliseName(t));
+      const isAlive=p=>p.teams.some(t=>!isOut(t));
+      let html='<div class="survival-grid">';
+      participants.forEach(p=>{
+        const a=isAlive(p);
+        html+=`<div class="survival-chip ${a?'chip-alive':'chip-out'}"><span class="chip-dot"></span>${a?'🟢':'💀'} ${p.name}</div>`;
+      });
+      html+='</div>';
+      const stageOrder=['LAST_32','LAST_16','QUARTER_FINALS','SEMI_FINALS','THIRD_PLACE','FINAL'];
+      const stageLabels={LAST_32:'Round of 32',LAST_16:'Round of 16',QUARTER_FINALS:'Quarter-Final',SEMI_FINALS:'Semi-Final',THIRD_PLACE:'3rd Place',FINAL:'⭐ FINAL'};
+      const knockout=matches.filter(m=>stageOrder.includes(m.stage));
+      if(!knockout.length){
+        html+=`<div class="no-data-msg">Knockout bracket appears once the group stage ends (after June 27).<br><small style="color:#444;display:block;margin-top:8px">Tournament kicks off June 11!</small></div>`;
+      } else {
+        stageOrder.forEach(stage=>{
+          const sm=knockout.filter(m=>m.stage===stage);
+          if(!sm.length)return;
+          html+=`<div class="section-heading">${stageLabels[stage]}</div>`;
+          sm.forEach(m=>{
+            const home=m.homeTeam.name,away=m.awayTeam.name;
+            const ho=findOwner(home),ao=findOwner(away);
+            const isLive=m.status==='IN_PLAY'||m.status==='PAUSED';
+            const hs=m.score.fullTime.home??'-',as_=m.score.fullTime.away??'-';
+            const hw=m.score.winner==='HOME_TEAM',aw=m.score.winner==='AWAY_TEAM';
+            let sl='';
+            if(isLive) sl='<span class="status-live">● LIVE</span>';
+            else if(m.status==='FINISHED') sl='<span class="status-finished">FT</span>';
+            else{const t=new Date(m.utcDate).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});sl=`<span class="status-timed">${t}</span>`;}
+            html+=`<div class="bracket-card ${isLive?'live-match':''} ${ho&&ao&&ho===ao?'same-owner':''}">
+              <div class="bracket-round-label">${stageLabels[stage]}${ho&&ao&&ho===ao?' · ⚠️ Same player!':''}${isLive?' · 🔴 LIVE':''}</div>
+              <div class="bracket-matchup">
+                <div class="bracket-side home" style="${hw?'background:#0a2015':''}">
+                  <div class="bracket-owner ${ho?'':'unknown'}">${ho||'?'}</div>
+                  <div class="bracket-team">${home}</div>
+                </div>
+                <div class="bracket-vs"><div class="bracket-score">${hs} – ${as_}</div><div class="bracket-status">${sl}</div></div>
+                <div class="bracket-side away" style="${aw?'background:#0a2015':''}">
+                  <div class="bracket-owner ${ao?'':'unknown'}">${ao||'?'}</div>
+                  <div class="bracket-team">${away}</div>
+                </div>
+              </div>
+            </div>`;
+          });
+        });
+      }
+      c.innerHTML=html;
+    }
+
+    let allMatches=[];
+    async function loadMatches(){
+      try{
+        const res=await fetch(API_URL);
+        const data=await res.json();
+        allMatches=data.matches;
+        displayMatches(allMatches);
+        renderBracket(allMatches);
+      }catch(err){
+        const msg=`<div class="error-msg">⚠️ Couldn't load match data.<br><small>${err.message}</small></div>`;
+        document.getElementById('matches-container').innerHTML=msg;
+        document.getElementById('bracket-container').innerHTML=msg;
+      }
+    }
+
+    function displayMatches(matches){
+      const c=document.getElementById('matches-container');
+      const today=new Date().toISOString().split('T')[0];
+      const live=matches.filter(m=>m.status==='IN_PLAY'||m.status==='PAUSED');
+      const tod=matches.filter(m=>m.status==='TIMED'&&m.utcDate.startsWith(today));
+      const recent=matches.filter(m=>m.status==='FINISHED').slice(-10).reverse();
+      let html='';
+      if(live.length){html+='<div class="section-heading">🔴 Live Now</div>';live.forEach(m=>{html+=buildMatchCard(m);});}
+      html+='<div class="section-heading">📅 Today\'s Matches</div>';
+      if(tod.length){tod.forEach(m=>{html+=buildMatchCard(m);});}
+      else html+='<div class="loading" style="padding:20px;color:#444">No matches today</div>';
+      if(recent.length){html+='<div class="section-heading">✅ Recent Results</div>';recent.forEach(m=>{html+=buildMatchCard(m);});}
+      if(!html)html='<div class="loading">Tournament starts June 11!</div>';
+      c.innerHTML=html;
+    }
+
+    function buildMatchCard(m){
+      const home=m.homeTeam.name,away=m.awayTeam.name,status=m.status;
+      const hs=m.score.fullTime.home??'-',as_=m.score.fullTime.away??'-';
+      const ho=findOwner(home),ao=findOwner(away);
+      let label='',cls='';
+      if(status==='IN_PLAY'){label='<span class="status-live">● LIVE</span>';cls='live';}
+      else if(status==='PAUSED'){label='<span class="status-live">⏸ HT</span>';cls='live';}
+      else if(status==='FINISHED'){label='<span class="status-finished">FT</span>';cls='finished';}
+      else{const t=new Date(m.utcDate).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});label=`<span class="status-timed">${t}</span>`;}
+      return `<div class="match-card ${cls}">
+        <div class="team-name home" style="${ho?'color:#c9a227':''}" title="${ho||''}">${home}</div>
+        <div class="match-score"><div class="score-numbers">${hs} – ${as_}</div><div class="score-status">${label}</div></div>
+        <div class="team-name away" style="${ao?'color:#c9a227':''}" title="${ao||''}">${away}</div>
+      </div>`;
+    }
+
+    let secondsLeft=60;
+    function startRefreshTimer(){
+      setInterval(()=>{
+        secondsLeft--;
+        document.getElementById('refresh-bar').textContent=`Auto-refreshing in ${secondsLeft}s`;
+        if(secondsLeft<=0){secondsLeft=60;loadMatches();}
+      },1000);
+    }
+
+    function renderDraw(){
+      const grid=document.getElementById('draw-grid');
+      participants.forEach(p=>{
+        grid.innerHTML+=`<div class="participant-card"><div class="participant-name">👤 ${p.name}</div><ul class="team-list">${p.teams.map(t=>`<li>🏴 ${t}</li>`).join('')}</ul></div>`;
+      });
+    }
+
+    function showTab(tabName,btn){
+      document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+      document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+      document.getElementById('tab-'+tabName).classList.add('active');
+      btn.classList.add('active');
+    }
+
+    renderDraw();
+    loadMatches();
+    startRefreshTimer();
+  </script>
+</body>
+</html>
