@@ -169,8 +169,8 @@
           if(!sm.length)return;
           html+=`<div class="section-heading">${stageLabels[stage]}</div>`;
           sm.forEach(m=>{
-            const home=m.homeTeam.name,away=m.awayTeam.name;
-            const ho=findOwner(home),ao=findOwner(away);
+            const home=m.homeTeam?.name||'TBD',away=m.awayTeam?.name||'TBD';
+            const ho=home==='TBD'?null:findOwner(home),ao=away==='TBD'?null:findOwner(away);
             const isLive=m.status==='IN_PLAY'||m.status==='PAUSED';
             const hs=m.score.fullTime.home??'-',as_=m.score.fullTime.away??'-';
             const hw=m.score.winner==='HOME_TEAM',aw=m.score.winner==='AWAY_TEAM';
@@ -216,21 +216,51 @@
     function displayMatches(matches){
       const c=document.getElementById('matches-container');
       const today=new Date().toISOString().split('T')[0];
-      const live=matches.filter(m=>m.status==='IN_PLAY'||m.status==='PAUSED');
-      const tod=matches.filter(m=>m.status==='TIMED'&&m.utcDate.startsWith(today));
-      const recent=matches.filter(m=>m.status==='FINISHED').slice(-10).reverse();
+      const live   = matches.filter(m=>m.status==='IN_PLAY'||m.status==='PAUSED');
+      const recent = matches.filter(m=>m.status==='FINISHED').slice(-10).reverse();
+      // All upcoming matches (TIMED = scheduled), sorted by date
+      const upcoming = matches.filter(m=>m.status==='TIMED'||m.status==='SCHEDULED')
+                               .sort((a,b)=>new Date(a.utcDate)-new Date(b.utcDate));
+
       let html='';
-      if(live.length){html+='<div class="section-heading">🔴 Live Now</div>';live.forEach(m=>{html+=buildMatchCard(m);});}
-      html+='<div class="section-heading">📅 Today\'s Matches</div>';
-      if(tod.length){tod.forEach(m=>{html+=buildMatchCard(m);});}
-      else html+='<div class="loading" style="padding:20px;color:#444">No matches today</div>';
-      if(recent.length){html+='<div class="section-heading">✅ Recent Results</div>';recent.forEach(m=>{html+=buildMatchCard(m);});}
-      if(!html)html='<div class="loading">Tournament starts June 11!</div>';
+
+      // Live now
+      if(live.length){
+        html+='<div class="section-heading">🔴 Live Now</div>';
+        live.forEach(m=>{html+=buildMatchCard(m);});
+      }
+
+      // Recent results
+      if(recent.length){
+        html+='<div class="section-heading">✅ Recent Results</div>';
+        recent.forEach(m=>{html+=buildMatchCard(m);});
+      }
+
+      // Upcoming fixtures grouped by date
+      if(upcoming.length){
+        html+='<div class="section-heading">📅 Upcoming Fixtures</div>';
+        // Group by date string e.g. "2026-06-11"
+        const byDate={};
+        upcoming.forEach(m=>{
+          const d=m.utcDate.split('T')[0];
+          if(!byDate[d]) byDate[d]=[];
+          byDate[d].push(m);
+        });
+        for(const [date, ms] of Object.entries(byDate)){
+          // Format date nicely e.g. "Wed 11 Jun"
+          const label=new Date(date+'T12:00:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
+          const isToday=date===today;
+          html+=`<div style="font-size:0.78rem;color:${isToday?'#c9a227':'#555'};font-weight:bold;margin:16px 0 8px;letter-spacing:1px">${isToday?'⭐ TODAY — ':''} ${label.toUpperCase()}</div>`;
+          ms.forEach(m=>{html+=buildMatchCard(m);});
+        }
+      }
+
+      if(!html) html='<div class="loading">Tournament starts June 11!</div>';
       c.innerHTML=html;
     }
 
     function buildMatchCard(m){
-      const home=m.homeTeam.name,away=m.awayTeam.name,status=m.status;
+      const home=m.homeTeam?.name||'TBD',away=m.awayTeam?.name||'TBD',status=m.status;
       const hs=m.score.fullTime.home??'-',as_=m.score.fullTime.away??'-';
       const ho=findOwner(home),ao=findOwner(away);
       let label='',cls='';
